@@ -39,9 +39,10 @@ public class PDFLine {
         }
 
         float offset = 0;
+        boolean first = true;
         for (PDFText text : text) {
             contentStream.setFont(text.getFont(), text.getFontSize());
-            if (Pattern.matches("\\p{Punct}", Character.toString(text.getContent().charAt(0)))) {
+            if (!first && Pattern.matches("\\p{Punct}", Character.toString(text.getContent().charAt(0)))) {
                 contentStream.newLineAtOffset(-spaceWidth, 0);
                 offset -= spaceWidth;
             }
@@ -49,6 +50,7 @@ public class PDFLine {
             float textWidth = text.getWidth() + spaceWidth;
             contentStream.newLineAtOffset(textWidth, 0);
             offset += textWidth;
+            first = false;
         }
         contentStream.newLineAtOffset(-offset, 0);
     }
