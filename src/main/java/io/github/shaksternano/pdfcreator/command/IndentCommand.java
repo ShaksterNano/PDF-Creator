@@ -30,10 +30,6 @@ public enum IndentCommand implements PDFCommand {
         }
         contentStream.newLineAtOffset(indentWidth, 0);
         settings.setIndent(indentWidth);
-        if (indentWidth < 0) {
-            contentStream.newLine();
-            contentStream.newLine();
-        }
         return contentStream;
     }
 }
