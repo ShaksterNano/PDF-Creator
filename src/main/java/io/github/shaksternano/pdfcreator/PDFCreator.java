@@ -49,7 +49,7 @@ public class PDFCreator {
         startY = pageHeight - paddingY;
         this.leadingRatio = leadingRatio;
         textAreaWidth = pageWidth - paddingX * 2;
-        textAreaHeight = pageWidth * 3 - paddingY * 2;
+        textAreaHeight = pageWidth * 2.9F - paddingY * 2;
     }
 
     /**
@@ -58,10 +58,7 @@ public class PDFCreator {
      * @throws IOException If an I/O error occurs.
      */
     public void create() throws IOException {
-        try (
-                BufferedReader reader = new BufferedReader(new FileReader(input));
-                PDDocument document = new PDDocument()
-        ) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(input)); PDDocument document = new PDDocument()) {
             PDFSettings settings = new PDFSettings();
             settings.setLeadingRatio(leadingRatio);
             PDPage currentPage = new PDPage();
