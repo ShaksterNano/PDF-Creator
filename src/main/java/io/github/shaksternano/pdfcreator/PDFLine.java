@@ -12,17 +12,17 @@ public class PDFLine {
 
     private final List<PDFText> text = new ArrayList<>();
     private float width = 0;
-    private float height = -1;
-    private float spaceWidth = -1;
+    private float height = 0;
+    private float spaceWidth = 0;
 
     public void addText(PDFText text) throws IOException {
         this.text.add(text);
         width += text.getWidth();
-        if (height == -1) {
+        if (height == 0) {
             PDFont font = text.getFont();
             height = text.getFontSize() * font.getBoundingBox().getHeight() / 1000;
         }
-        if (spaceWidth == -1) {
+        if (spaceWidth == 0) {
             PDFont font = text.getFont();
             spaceWidth = text.getFontSize() * font.getStringWidth(" ") / 1000;
         }
@@ -58,8 +58,8 @@ public class PDFLine {
     public void clear() {
         text.clear();
         width = 0;
-        height = -1;
-        spaceWidth = -1;
+        height = 0;
+        spaceWidth = 0;
     }
 
     public float getWidth() {
