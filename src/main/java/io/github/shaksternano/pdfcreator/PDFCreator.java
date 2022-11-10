@@ -25,7 +25,6 @@ public class PDFCreator {
     private final float leadingRatio;
     private final float textAreaWidth;
     private final float textAreaHeight;
-
     private final Map<String, PDFont> cachedFonts = new HashMap<>();
 
     /**
