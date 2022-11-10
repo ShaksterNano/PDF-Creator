@@ -34,8 +34,8 @@ public class PDFCreator {
         startX = paddingX;
         startY = pageHeight - paddingY;
         this.leadingRatio = leadingRatio;
-        textAreaWidth = pageWidth - (paddingX * 2);
-        textAreaHeight = (float) ((pageWidth * Math.sqrt(2)) - (paddingY * 2));
+        textAreaWidth = pageWidth - paddingX * 2;
+        textAreaHeight = pageWidth * 3 - paddingY * 2;
     }
 
     public void create() throws IOException {
@@ -121,7 +121,13 @@ public class PDFCreator {
                             currentLine,
                             totalHeight,
                             textAreaWidth,
-                            textAreaHeight, startX, startY, document, contentStream, settings);
+                            textAreaHeight,
+                            startX,
+                            startY,
+                            document,
+                            contentStream,
+                            settings
+                    );
                 } catch (IOException e) {
                     System.err.println("Error while executing command " + line);
                     e.printStackTrace();
