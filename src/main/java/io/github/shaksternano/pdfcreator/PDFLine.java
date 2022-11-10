@@ -2,7 +2,6 @@ package io.github.shaksternano.pdfcreator;
 
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDFont;
-import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -20,11 +19,11 @@ public class PDFLine {
         this.text.add(text);
         width += text.getWidth();
         if (height == -1) {
-            PDFont font = new PDType1Font(text.getFontName());
+            PDFont font = text.getFont();
             height = text.getFontSize() * font.getBoundingBox().getHeight() / 1000;
         }
         if (spaceWidth == -1) {
-            PDFont font = new PDType1Font(text.getFontName());
+            PDFont font = text.getFont();
             spaceWidth = text.getFontSize() * font.getStringWidth(" ") / 1000;
         }
         width += spaceWidth;
@@ -41,7 +40,7 @@ public class PDFLine {
 
         float offset = 0;
         for (PDFText text : text) {
-            contentStream.setFont(new PDType1Font(text.getFontName()), text.getFontSize());
+            contentStream.setFont(text.getFont(), text.getFontSize());
             if (Pattern.matches("\\p{Punct}", Character.toString(text.getContent().charAt(0)))) {
                 contentStream.newLineAtOffset(-spaceWidth, 0);
             }

@@ -4,7 +4,7 @@ import io.github.shaksternano.pdfcreator.command.PDFCommand;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
-import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
+import org.apache.pdfbox.pdmodel.font.PDFont;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -80,7 +80,7 @@ public class PDFCreator {
     protected PDPageContentStream writeText(String input, PDFLine currentLine, Counter totalHeight, PDDocument document, PDPageContentStream contentStream, PDFSettings settings) throws IOException {
         String[] words = input.split("\\s+");
         for (String word : words) {
-            PDFText text = new PDFText(word, getFontName(settings), settings.getFontSize());
+            PDFText text = new PDFText(word, createFont(settings, document), settings.getFontSize());
             if (currentLine.getWidth() + text.getWidth() <= textAreaWidth - settings.getIndent()) {
                 currentLine.addText(text);
             } else {
@@ -94,17 +94,17 @@ public class PDFCreator {
         return contentStream;
     }
 
-    protected Standard14Fonts.FontName getFontName(PDFSettings settings) {
+    protected PDFont createFont(PDFSettings settings, PDDocument document) throws IOException {
         boolean bold = settings.isBold();
         boolean italic = settings.isItalic();
         if (bold && italic) {
-            return font.getBoldItalic();
+            return font.createBoldItalic(document);
         } else if (bold) {
-            return font.getBold();
+            return font.createBold(document);
         } else if (italic) {
-            return font.getItalic();
+            return font.createItalic(document);
         } else {
-            return font.getRegular();
+            return font.createRegular(document);
         }
     }
 
