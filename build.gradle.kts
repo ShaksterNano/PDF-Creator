@@ -1,9 +1,13 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+
 plugins {
     id("java")
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "io.github.shaksternano"
-version = "1.0-SNAPSHOT"
+base.archivesName.set("pdf-creator")
+version = "1.0.0"
 
 repositories {
     mavenCentral()
@@ -17,4 +21,34 @@ dependencies {
 
 tasks.getByName<Test>("test") {
     useJUnitPlatform()
+}
+
+tasks {
+    named<ShadowJar>("shadowJar") {
+        archiveBaseName.set("pdf-creator-shadow")
+        mergeServiceFiles()
+        manifest {
+            attributes(mapOf("Main-Class" to "${project.group}.pdfcreator.Main"))
+        }
+    }
+}
+
+tasks {
+    build {
+        dependsOn(shadowJar)
+    }
+}
+
+task("copyToLib") {
+    doLast {
+        copy {
+            into("$buildDir/libs")
+            from(configurations.compileClasspath)
+        }
+    }
+}
+
+task("stage") {
+    dependsOn.add("build")
+    dependsOn.add("copyToLib")
 }
