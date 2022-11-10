@@ -11,6 +11,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 public class PDFCreator {
@@ -24,6 +26,18 @@ public class PDFCreator {
     private final float textAreaWidth;
     private final float textAreaHeight;
 
+    private final Map<String, PDFont> cachedFonts = new HashMap<>();
+
+    /**
+     * Creates a new PDFCreator instance.
+     *
+     * @param input        The input file.
+     * @param output       The output file.
+     * @param font         The font to use in the PDF.
+     * @param paddingX     The horizontal text padding.
+     * @param paddingY     The vertical text padding.
+     * @param leadingRatio The ratio of the leading to the font size.
+     */
     public PDFCreator(File input, File output, PDFFont font, float paddingX, float paddingY, float leadingRatio) {
         this.input = input;
         this.output = output;
@@ -38,6 +52,11 @@ public class PDFCreator {
         textAreaHeight = pageWidth * 3 - paddingY * 2;
     }
 
+    /**
+     * Creates the PDF file.
+     *
+     * @throws IOException If an I/O error occurs.
+     */
     public void create() throws IOException {
         try (
                 BufferedReader reader = new BufferedReader(new FileReader(input));
@@ -66,6 +85,20 @@ public class PDFCreator {
         }
     }
 
+    /**
+     * Processes one line of the input file.
+     *
+     * @param input         The input line.
+     * @param currentLine   The current line that's being built.
+     * @param totalHeight   The total height of the text on the current page.
+     * @param document      The PDF document being created.
+     * @param contentStream The current content stream.
+     * @param settings      The PDF settings.
+     * @return The updated content stream. If a new page was added,
+     * a new content stream is returned and the old one is closed.
+     * Otherwise, the same content stream is returned.
+     * @throws IOException If an I/O error occurs.
+     */
     protected PDPageContentStream processInputLine(String input, PDFLine currentLine, Counter totalHeight, PDDocument document, PDPageContentStream contentStream, PDFSettings settings) throws IOException {
         if (!input.isBlank()) {
             if (input.startsWith(".")) {
@@ -77,10 +110,26 @@ public class PDFCreator {
         return contentStream;
     }
 
+    /**
+     * Appends text to the current line. If the line is too long,
+     * it is written to the PDF and the line is cleared.
+     * If the end of the page is reached, a new page is added.
+     *
+     * @param input         The input line.
+     * @param currentLine   The current line that's being built.
+     * @param totalHeight   The total height of the text on the current page.
+     * @param document      The PDF document being created.
+     * @param contentStream The current content stream.
+     * @param settings      The PDF settings.
+     * @return The updated content stream. If a new page was added,
+     * a new content stream is returned and the old one is closed.
+     * Otherwise, the same content stream is returned.
+     * @throws IOException If an I/O error occurs.
+     */
     protected PDPageContentStream writeText(String input, PDFLine currentLine, Counter totalHeight, PDDocument document, PDPageContentStream contentStream, PDFSettings settings) throws IOException {
         String[] words = input.split("\\s+");
         for (String word : words) {
-            PDFText text = new PDFText(word, createFont(settings, document), settings.getFontSize());
+            PDFWord text = new PDFWord(word, getFont(settings, document), settings.getFontSize());
             if (currentLine.getWidth() + text.getWidth() <= textAreaWidth - settings.getIndent()) {
                 currentLine.addText(text);
             } else {
@@ -95,20 +144,63 @@ public class PDFCreator {
         return contentStream;
     }
 
-    protected PDFont createFont(PDFSettings settings, PDDocument document) throws IOException {
+    /**
+     * Gets the font to be used. The font returned varies
+     * depending on the {@link PDFSettings}. The font is cached.
+     *
+     * @param settings The PDF settings.
+     * @param document The PDF document being created.
+     * @return The font to be used.
+     * @throws IOException If an I/O error occurs.
+     */
+    protected PDFont getFont(PDFSettings settings, PDDocument document) throws IOException {
         boolean bold = settings.isBold();
         boolean italic = settings.isItalic();
+        PDFont pdFont;
         if (bold && italic) {
-            return font.createBoldItalic(document);
+            String fontStyle = "bold-italic";
+            pdFont = cachedFonts.get(fontStyle);
+            if (pdFont == null) {
+                pdFont = font.createBoldItalic(document);
+                cachedFonts.put(fontStyle, pdFont);
+            }
         } else if (bold) {
-            return font.createBold(document);
+            String fontStyle = "bold";
+            pdFont = cachedFonts.get(fontStyle);
+            if (pdFont == null) {
+                pdFont = font.createBold(document);
+                cachedFonts.put(fontStyle, pdFont);
+            }
         } else if (italic) {
-            return font.createItalic(document);
+            String fontStyle = "italic";
+            pdFont = cachedFonts.get(fontStyle);
+            if (pdFont == null) {
+                pdFont = font.createItalic(document);
+                cachedFonts.put(fontStyle, pdFont);
+            }
         } else {
-            return font.createRegular(document);
+            String fontStyle = "regular";
+            pdFont = cachedFonts.get(fontStyle);
+            if (pdFont == null) {
+                pdFont = font.createRegular(document);
+                cachedFonts.put(fontStyle, pdFont);
+            }
         }
+        return pdFont;
     }
 
+    /**
+     * Parses a PDF input command and executes it.
+     *
+     * @param line          The input line.
+     * @param currentLine   The current line that's being built.
+     * @param totalHeight   The total height of the text on the current page.
+     * @param document      The PDF document being created.
+     * @param contentStream The current content stream.
+     * @param settings      The PDF settings.
+     * @return The updated content stream. If a new page was added,
+     * a new content stream is returned and the old one is closed.
+     */
     protected PDPageContentStream parseAndExecuteCommand(String line, PDFLine currentLine, Counter totalHeight, PDDocument document, PDPageContentStream contentStream, PDFSettings settings) {
         String[] commandAndArgs = line.substring(1).split("\\s+");
         if (commandAndArgs.length > 0) {
@@ -139,6 +231,21 @@ public class PDFCreator {
         return contentStream;
     }
 
+    /**
+     * Adds a new page if the current page is full.
+     *
+     * @param currentLine    The current line that's being built.
+     * @param totalHeight    The total height of the text on the current page.
+     * @param textAreaHeight The height of the text area.
+     * @param startX         The x-coordinate of the start of the text area.
+     * @param startY         The y-coordinate of the start of the text area.
+     * @param settings       The PDF settings.
+     * @param document       The PDF document being created.
+     * @param contentStream  The current content stream.
+     * @return The updated content stream. If a new page was added,
+     * a new content stream is returned and the old one is closed.
+     * @throws IOException If an I/O error occurs.
+     */
     public static PDPageContentStream tryAddNewPage(PDFLine currentLine, Counter totalHeight, float textAreaHeight, float startX, float startY, PDFSettings settings, PDDocument document, PDPageContentStream contentStream) throws IOException {
         totalHeight.add(currentLine.getHeight());
         if (totalHeight.getValue() > textAreaHeight) {

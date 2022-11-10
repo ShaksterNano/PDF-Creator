@@ -8,6 +8,7 @@ public class Main {
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public static void main(String[] args) throws IOException {
+        // Get the input file
         Scanner scanner = new Scanner(System.in);
         File input = new File("");
         while (!input.isFile()) {
@@ -19,6 +20,7 @@ public class Main {
             }
         }
 
+        // Get the output directory
         File outputDir = new File("");
         while (!outputDir.isDirectory()) {
             System.out.print("Enter the path to the output directory. Leave empty for the input file directory: ");
@@ -35,12 +37,15 @@ public class Main {
             }
         }
 
+        // Get the output filename
         System.out.print("Enter the PDF name: ");
         String pdfName = scanner.nextLine();
         if (!pdfName.toLowerCase().endsWith(".pdf")) {
             pdfName += ".pdf";
         }
         File output = new File(outputDir, pdfName);
+
+        // Create the PDF file
         PDFCreator pdfCreator = new PDFCreator(
                 input,
                 output,

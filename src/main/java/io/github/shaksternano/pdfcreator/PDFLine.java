@@ -8,14 +8,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+/**
+ * Represents one line of text in a PDF.
+ */
 public class PDFLine {
 
-    private final List<PDFText> text = new ArrayList<>();
+    private final List<PDFWord> text = new ArrayList<>();
     private float width = 0;
     private float height = 0;
     private float spaceWidth = 0;
 
-    public void addText(PDFText text) throws IOException {
+    public void addText(PDFWord text) throws IOException {
         this.text.add(text);
         width += text.getWidth();
         if (height == 0) {
@@ -29,6 +32,14 @@ public class PDFLine {
         width += spaceWidth;
     }
 
+    /**
+     * Writes the line to the PDF.
+     *
+     * @param contentStream the content stream to write to.
+     * @param settings      The settings to use.
+     * @param textAreaWidth The width of the text area.
+     * @throws IOException if an I/O error occurs.
+     */
     public void write(PDPageContentStream contentStream, PDFSettings settings, float textAreaWidth) throws IOException {
         contentStream.setLeading(settings.getLeadingRatio() * settings.getFontSize());
         float spaceWidth = this.spaceWidth;
@@ -40,7 +51,7 @@ public class PDFLine {
 
         float offset = 0;
         boolean first = true;
-        for (PDFText text : text) {
+        for (PDFWord text : text) {
             contentStream.setFont(text.getFont(), text.getFontSize());
             if (!first && Pattern.matches("\\p{Punct}", Character.toString(text.getContent().charAt(0)))) {
                 contentStream.newLineAtOffset(-spaceWidth, 0);

@@ -7,6 +7,10 @@ import org.apache.pdfbox.pdmodel.font.PDType0Font;
 import java.io.IOException;
 import java.io.InputStream;
 
+/**
+ * Links the regular, bold, italic and bold
+ * italic fonts together under one name.
+ */
 public enum PDFFont {
 
     HELVETICA(
