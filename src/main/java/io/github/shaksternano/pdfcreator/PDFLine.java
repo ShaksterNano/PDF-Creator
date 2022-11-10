@@ -56,6 +56,8 @@ public class PDFLine {
     public void clear() {
         text.clear();
         width = 0;
+        height = -1;
+        spaceWidth = -1;
     }
 
     public float getWidth() {

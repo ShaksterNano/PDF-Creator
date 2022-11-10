@@ -58,7 +58,7 @@ public class PDFCreator {
                 contentStream = processInputLine(line, currentLine, totalHeight, document, contentStream, settings);
                 line = reader.readLine();
             }
-            contentStream = tryAddNewPage(currentLine, totalHeight, textAreaHeight, startX, startY, document, contentStream, settings);
+            contentStream = tryAddNewPage(currentLine, totalHeight, textAreaHeight, startX, startY, document, contentStream);
             currentLine.write(contentStream, settings, textAreaWidth);
             contentStream.endText();
             contentStream.close();
@@ -84,7 +84,7 @@ public class PDFCreator {
             if (currentLine.getWidth() + text.getWidth() <= textAreaWidth - settings.getIndent()) {
                 currentLine.addText(text);
             } else {
-                contentStream = tryAddNewPage(currentLine, totalHeight, textAreaHeight, startX, startY, document, contentStream, settings);
+                contentStream = tryAddNewPage(currentLine, totalHeight, textAreaHeight, startX, startY, document, contentStream);
                 currentLine.write(contentStream, settings, textAreaWidth);
                 contentStream.newLine();
                 currentLine.clear();
@@ -132,7 +132,7 @@ public class PDFCreator {
         return contentStream;
     }
 
-    public static PDPageContentStream tryAddNewPage(PDFLine currentLine, Counter totalHeight, float textAreaHeight, float startX, float startY, PDDocument document, PDPageContentStream contentStream, PDFSettings settings) throws IOException {
+    public static PDPageContentStream tryAddNewPage(PDFLine currentLine, Counter totalHeight, float textAreaHeight, float startX, float startY, PDDocument document, PDPageContentStream contentStream) throws IOException {
         totalHeight.add(currentLine.getHeight());
         if (totalHeight.getValue() > textAreaHeight) {
             contentStream.endText();
@@ -141,7 +141,7 @@ public class PDFCreator {
             document.addPage(currentPage);
             contentStream = new PDPageContentStream(document, currentPage);
             contentStream.beginText();
-            contentStream.newLineAtOffset(startX + settings.getIndent(), startY);
+            contentStream.newLineAtOffset(startX, startY);
             totalHeight.set(currentLine.getHeight());
         }
         return contentStream;

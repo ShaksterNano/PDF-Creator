@@ -16,7 +16,7 @@ public enum NewParagraphCommand implements PDFCommand {
 
     @Override
     public PDPageContentStream execute(List<String> args, PDFLine currentLine, Counter totalHeight, float textAreaWidth, float textAreaHeight, float startX, float startY, PDDocument document, PDPageContentStream contentStream, PDFSettings settings) throws IOException {
-        contentStream = PDFCreator.tryAddNewPage(currentLine, totalHeight, textAreaHeight, startX, startY, document, contentStream, settings);
+        contentStream = PDFCreator.tryAddNewPage(currentLine, totalHeight, textAreaHeight, startX, startY, document, contentStream);
         currentLine.write(contentStream, settings, textAreaWidth);
         totalHeight.add(currentLine.getHeight());
         currentLine.clear();
