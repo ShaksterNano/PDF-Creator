@@ -43,6 +43,7 @@ public class PDFLine {
             contentStream.setFont(text.getFont(), text.getFontSize());
             if (Pattern.matches("\\p{Punct}", Character.toString(text.getContent().charAt(0)))) {
                 contentStream.newLineAtOffset(-spaceWidth, 0);
+                offset -= spaceWidth;
             }
             contentStream.showText(text.getContent());
             float textWidth = text.getWidth() + spaceWidth;
